@@ -11,22 +11,13 @@ class ThumbnailImageWidget extends StatelessWidget {
   /// image quality thumbnail
   final int thumbnailQuality;
 
-  /// background image color
-  final Color imageBackgroundColor;
-
   /// image provider
   final PickerDataProvider provider;
 
-  /// selected background color
-  final Color selectedBackgroundColor;
-
   /// builder icon selection
-  final SelectionWidgetBuilder? selectionBuilder;
+  final DisableWidgetBuilder? disableBuilder;
 
   final bool Function(AssetEntity)? onEnableItem;
-
-  /// selected Check Background Color
-  final Color selectedCheckBackgroundColor;
 
   /// thumbnail box fit
   final BoxFit fit;
@@ -36,11 +27,8 @@ class ThumbnailImageWidget extends StatelessWidget {
     required this.asset,
     required this.provider,
     this.thumbnailQuality = 200,
-    this.imageBackgroundColor = Colors.white,
-    this.selectedBackgroundColor = Colors.white,
     this.fit = BoxFit.cover,
-    this.selectedCheckBackgroundColor = Colors.white,
-    this.selectionBuilder,
+    this.disableBuilder,
     this.onEnableItem,
   }) : super(key: key);
 
@@ -49,14 +37,9 @@ class ThumbnailImageWidget extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        Container(
-          decoration: BoxDecoration(color: imageBackgroundColor),
-        ),
-
         /// thumbnail image
         FutureBuilder<Uint8List?>(
-          future: asset.thumbnailDataWithSize(
-              ThumbnailSize(thumbnailQuality, thumbnailQuality)),
+          future: asset.thumbnailDataWithSize(ThumbnailSize(thumbnailQuality, thumbnailQuality)),
           builder: (_, data) {
             if (data.hasData && data.data != null) {
               return SizedBox(
@@ -83,30 +66,30 @@ class ThumbnailImageWidget extends StatelessWidget {
             final picked = pickIndex >= 0;
             return Stack(
               children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
+                Container(
                   decoration: BoxDecoration(
-                    color: picked
-                        ? selectedBackgroundColor.withOpacity(0.5)
-                        : Colors.transparent,
+                    color: picked ? Colors.grey.withOpacity(0.5) : Colors.transparent,
+                    border: Border.all(
+                      color: picked ? Theme.of(context).primaryColor : Colors.transparent,
+                      width: 3,
+                    ),
                   ),
                 ),
 
                 /// selected image check
-                selectionBuilder != null
-                    ? selectionBuilder!.call(context, picked, pickIndex)
-                    : defaultIconSelectionBuilder(context, picked),
+                defaultIconSelectionBuilder(context, picked),
 
                 /// check media enable
                 if (onEnableItem?.call(asset) == false)
-                  Container(
-                    decoration: BoxDecoration(
-                      color: selectedBackgroundColor.withOpacity(0.5),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Icon(Icons.warning_amber_outlined,
-                        color: Colors.white, size: 40),
-                  ),
+                  disableBuilder?.call(context, asset, pickIndex) ??
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(0.5),
+                        ),
+                        alignment: Alignment.center,
+                        child:
+                            const Icon(Icons.warning_amber_outlined, color: Colors.white, size: 40),
+                      ),
               ],
             );
           },
@@ -115,40 +98,29 @@ class ThumbnailImageWidget extends StatelessWidget {
         /// video duration widget
         if (asset.type == AssetType.video)
           Align(
-            alignment: Alignment.center,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 5, bottom: 5),
-              child: Container(
-                  decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.white, width: 1)),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.play_circle_fill,
-                        color: Colors.white,
-                        size: 40,
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      Text(
-                        _parseDuration(asset.videoDuration.inSeconds),
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16),
-                      ),
-                    ],
-                  )),
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Icon(
+                    Icons.video_camera_back_sharp,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                  Text(
+                    _parseDuration(asset.videoDuration.inSeconds),
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ],
+              ),
             ),
-          )
+          ),
       ],
     );
   }
@@ -156,24 +128,21 @@ class ThumbnailImageWidget extends StatelessWidget {
   Widget defaultIconSelectionBuilder(BuildContext context, bool picked) {
     return Align(
       alignment: Alignment.topRight,
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 200),
+      child: Opacity(
         opacity: picked ? 1 : 0,
         child: Container(
-          height: 30,
-          width: 30,
+          height: 22,
+          width: 22,
           margin: const EdgeInsets.only(right: 5, top: 5),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: picked
-                ? selectedCheckBackgroundColor.withOpacity(0.6)
-                : Colors.transparent,
+            color: picked ? Theme.of(context).primaryColor : Colors.transparent,
             border: Border.all(width: 1.5, color: Colors.white),
           ),
           child: const Icon(
             Icons.check,
             color: Colors.white,
-            size: 20,
+            size: 13,
           ),
         ),
       ),
@@ -182,7 +151,7 @@ class ThumbnailImageWidget extends StatelessWidget {
 }
 
 /// parse second to duration
-_parseDuration(int seconds) {
+String _parseDuration(int seconds) {
   if (seconds < 600) {
     return '${Duration(seconds: seconds)}'.toString().substring(3, 7);
   } else if (seconds > 600 && seconds < 3599) {

@@ -6,8 +6,7 @@ import 'package:photo_manager/photo_manager.dart';
 
 import 'enum/album_type.dart';
 
-typedef SelectionWidgetBuilder = Widget Function(
-    BuildContext context, bool selected, int index);
+typedef DisableWidgetBuilder = Widget Function(BuildContext context, AssetEntity item, int index);
 
 class AlbumImagePicker extends StatefulWidget {
   /// maximum images allowed (default 1)
@@ -15,9 +14,6 @@ class AlbumImagePicker extends StatefulWidget {
 
   /// maximum images allowed (default 1)
   final int maxSelectionVideo;
-
-  /// return all selected images
-  final Function(List<AssetEntity>) onSelected;
 
   /// preSelected images
   final List<AssetEntity>? selected;
@@ -40,36 +36,18 @@ class AlbumImagePicker extends StatefulWidget {
   /// thumbnail box fit
   final BoxFit thumbnailBoxFix;
 
-  /// gridview crossAxisCount
-  final int crossAxisCount;
-
-  /// gallery gridview aspect ratio
-  final double childAspectRatio;
-
-  /// gridView Padding
-  final EdgeInsets gridPadding;
-
   /// gridView physics
   final ScrollPhysics? scrollPhysics;
 
   /// gridView controller
   final ScrollController? scrollController;
 
-  /// gridView background color
-  final Color listBackgroundColor;
-
-  /// grid image backGround color
-  final Color itemBackgroundColor;
-
-  /// grid selected image backGround color
-  final Color selectedItemBackgroundColor;
-
   /// dropdown appbar color
   final Color appBarColor;
 
   ///Icon widget builder
   ///index = -1, not selected yet
-  final SelectionWidgetBuilder? selectionBuilder;
+  final DisableWidgetBuilder? disableBuilder;
 
   ///Close widget
   final Widget? closeWidget;
@@ -77,27 +55,8 @@ class AlbumImagePicker extends StatefulWidget {
   ///appBar actions widgets
   final List<Widget>? appBarActionWidgets;
 
-  /// album header text color
-  final TextStyle albumHeaderTextStyle;
-
-  /// album text color
-  final TextStyle albumTextStyle;
-
-  /// album sub text color
-  final TextStyle albumSubTextStyle;
-
   /// album text color
   final double appBarHeight;
-
-  /// album background color
-  final Color albumBackGroundColor;
-
-  /// album divider color
-  final Color albumDividerColor;
-
-  final bool centerTitle;
-
-  final Widget? emptyAlbumThumbnail;
 
   /// check enable item
   final bool Function(AssetEntity)? onEnableItem;
@@ -106,35 +65,19 @@ class AlbumImagePicker extends StatefulWidget {
       {Key? key,
       this.maxSelectionImage = 1,
       this.maxSelectionVideo = 1,
-      required this.onSelected,
       this.selected,
       this.type = AlbumType.all,
       this.thumbnailBoxFix = BoxFit.cover,
-      this.crossAxisCount = 3,
-      this.childAspectRatio = 1.0,
       this.thumbnailQuality = 200,
-      this.gridPadding = EdgeInsets.zero,
-      this.listBackgroundColor = Colors.white,
-      this.itemBackgroundColor = Colors.grey,
-      this.selectedItemBackgroundColor = Colors.grey,
-      this.appBarColor = Colors.redAccent,
-      this.albumTextStyle = const TextStyle(color: Colors.white, fontSize: 18),
-      this.albumHeaderTextStyle =
-          const TextStyle(color: Colors.white, fontSize: 18),
-      this.albumSubTextStyle =
-          const TextStyle(color: Colors.white, fontSize: 14),
+      this.appBarColor = Colors.white,
       this.appBarHeight = 45,
-      this.albumBackGroundColor = const Color(0xFF333333),
-      this.albumDividerColor = const Color(0xFF484848),
-      this.centerTitle = true,
       this.appBarActionWidgets,
       this.closeWidget,
-      this.selectionBuilder,
+      this.disableBuilder,
       this.scrollPhysics,
       this.scrollController,
       this.onSelectedMaxVideo,
       this.onSelectedMaxImage,
-      this.emptyAlbumThumbnail,
       this.onEnableItem})
       : super(key: key);
 
@@ -142,8 +85,7 @@ class AlbumImagePicker extends StatefulWidget {
   AlbumImagePickerState createState() => AlbumImagePickerState();
 }
 
-class AlbumImagePickerState extends State<AlbumImagePicker>
-    with AutomaticKeepAliveClientMixin {
+class AlbumImagePickerState extends State<AlbumImagePicker> with AutomaticKeepAliveClientMixin {
   /// create object of PickerDataProvider
   late PickerDataProvider provider;
 
@@ -181,8 +123,7 @@ class AlbumImagePickerState extends State<AlbumImagePicker>
 
   void _getPermission() async {
     var result = await PhotoManager.requestPermissionExtend(
-        requestOption: const PermissionRequestOption(
-            iosAccessLevel: IosAccessLevel.readWrite));
+        requestOption: const PermissionRequestOption(iosAccessLevel: IosAccessLevel.readWrite));
     if (result.isAuth) {
       PhotoManager.startChangeNotify();
       PhotoManager.addChangeCallback((value) {
@@ -234,17 +175,17 @@ class AlbumImagePickerState extends State<AlbumImagePicker>
         /// album drop down
         AppBarAlbum(
           provider: provider,
-          albumDividerColor: widget.albumDividerColor,
-          albumBackGroundColor: widget.albumBackGroundColor,
           appBarColor: widget.appBarColor,
-          albumTextStyle: widget.albumTextStyle,
-          albumHeaderTextStyle: widget.albumHeaderTextStyle,
-          albumSubTextStyle: widget.albumSubTextStyle,
           height: widget.appBarHeight,
           appBarLeadingWidget: widget.closeWidget,
-          appBarActionWidgets: widget.appBarActionWidgets,
-          centerTitle: widget.centerTitle,
-          emptyAlbumThumbnail: widget.emptyAlbumThumbnail,
+          appBarActionWidgets: [
+            ...widget.appBarActionWidgets ?? [],
+            const SizedBox(width: 15),
+            TextButton(
+                onPressed: () => Navigator.pop(context, provider.picked),
+                child: const Text('Done')),
+            const SizedBox(width: 5),
+          ],
         ),
 
         /// grid image view
@@ -256,37 +197,21 @@ class AlbumImagePickerState extends State<AlbumImagePicker>
                     path: currentPath,
                     thumbnailQuality: widget.thumbnailQuality,
                     provider: provider,
-                    padding: widget.gridPadding,
-                    childAspectRatio: widget.childAspectRatio,
-                    crossAxisCount: widget.crossAxisCount,
-                    gridViewBackgroundColor: widget.listBackgroundColor,
+                    gridViewBackgroundColor: Colors.white,
                     gridViewController: widget.scrollController,
                     gridViewPhysics: widget.scrollPhysics,
-                    imageBackgroundColor: widget.itemBackgroundColor,
-                    selectedBackgroundColor: widget.selectedItemBackgroundColor,
-                    selectionBuilder: widget.selectionBuilder,
+                    disableBuilder: widget.disableBuilder,
                     thumbnailBoxFix: widget.thumbnailBoxFix,
-                    selectedCheckBackgroundColor:
-                        widget.selectedItemBackgroundColor,
                     onAssetItemClick: (ctx, asset, index) async {
                       provider.pickEntity(asset);
-                      widget.onSelected(provider.picked);
                     },
                     onEnableItem: widget.onEnableItem,
                   )
-                : Container(),
+                : const SizedBox.shrink(),
           ),
         )
       ],
     );
-  }
-
-  Widget _defaultCloseWidget() {
-    return IconButton(
-        onPressed: () {
-          Navigator.pop(context);
-        },
-        icon: const Text('Cancel'));
   }
 
   @override
