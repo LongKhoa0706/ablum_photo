@@ -170,47 +170,50 @@ class AlbumImagePickerState extends State<AlbumImagePicker> with AutomaticKeepAl
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return Column(
-      children: [
-        /// album drop down
-        AppBarAlbum(
-          provider: provider,
-          appBarColor: widget.appBarColor,
-          height: widget.appBarHeight,
-          appBarLeadingWidget: widget.closeWidget,
-          appBarActionWidgets: [
-            ...widget.appBarActionWidgets ?? [],
-            const SizedBox(width: 15),
-            TextButton(
-                onPressed: () => Navigator.pop(context, provider.picked),
-                child: const Text('Done')),
-            const SizedBox(width: 5),
-          ],
-        ),
-
-        /// grid image view
-        Expanded(
-          child: ValueListenableBuilder<AssetPathEntity?>(
-            valueListenable: provider.currentPathNotifier,
-            builder: (context, currentPath, child) => currentPath != null
-                ? GalleryGridView(
-                    path: currentPath,
-                    thumbnailQuality: widget.thumbnailQuality,
-                    provider: provider,
-                    gridViewBackgroundColor: Colors.white,
-                    gridViewController: widget.scrollController,
-                    gridViewPhysics: widget.scrollPhysics,
-                    disableBuilder: widget.disableBuilder,
-                    thumbnailBoxFix: widget.thumbnailBoxFix,
-                    onAssetItemClick: (ctx, asset, index) async {
-                      provider.pickEntity(asset);
-                    },
-                    onEnableItem: widget.onEnableItem,
-                  )
-                : const SizedBox.shrink(),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          /// album drop down
+          AppBarAlbum(
+            provider: provider,
+            appBarColor: widget.appBarColor,
+            height: widget.appBarHeight,
+            appBarLeadingWidget: widget.closeWidget,
+            appBarActionWidgets: [
+              ...widget.appBarActionWidgets ?? [],
+              const SizedBox(width: 15),
+              TextButton(
+                  onPressed: () => Navigator.pop(context, provider.picked),
+                  child: const Text('Done')),
+              const SizedBox(width: 5),
+            ],
           ),
-        )
-      ],
+
+          /// grid image view
+          Expanded(
+            child: ValueListenableBuilder<AssetPathEntity?>(
+              valueListenable: provider.currentPathNotifier,
+              builder: (context, currentPath, child) => currentPath != null
+                  ? GalleryGridView(
+                      path: currentPath,
+                      thumbnailQuality: widget.thumbnailQuality,
+                      provider: provider,
+                      gridViewBackgroundColor: Colors.white,
+                      gridViewController: widget.scrollController,
+                      gridViewPhysics: widget.scrollPhysics,
+                      disableBuilder: widget.disableBuilder,
+                      thumbnailBoxFix: widget.thumbnailBoxFix,
+                      onAssetItemClick: (ctx, asset, index) async {
+                        provider.pickEntity(asset);
+                      },
+                      onEnableItem: widget.onEnableItem,
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          )
+        ],
+      ),
     );
   }
 

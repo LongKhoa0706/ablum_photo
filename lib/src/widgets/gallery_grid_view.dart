@@ -132,7 +132,7 @@ class GalleryGridViewState extends State<GalleryGridView> {
           return Container(
             width: double.infinity,
             height: double.infinity,
-            color: Colors.white,
+            color: Colors.grey.shade200,
           );
         }
 

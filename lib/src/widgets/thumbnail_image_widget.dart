@@ -52,7 +52,9 @@ class ThumbnailImageWidget extends StatelessWidget {
                 ),
               );
             } else {
-              return Container();
+              return Container(
+                color: Colors.grey.shade200,
+              );
             }
           },
         ),

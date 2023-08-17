@@ -65,48 +65,51 @@ class AppBarAlbum extends StatelessWidget {
         decoration: decoration,
       );
     } else {
-      return PopupMenuButton<AssetPathEntity>(
-        constraints: const BoxConstraints(minHeight: 10, maxHeight: 250),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        offset: const Offset(0, 30),
-        onSelected: (val) {
-          provider.currentPath = val;
-        },
-        itemBuilder: (BuildContext context) {
-          return provider.pathList
-              .map(
-                (e) => PopupMenuItem<AssetPathEntity>(
-                  value: e,
-                  padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 10),
-                  child: FutureBuilder(
-                    future: e.assetCountAsync,
-                    builder: (context, snapshot) {
-                      return Text(
-                        '${e.name} (${snapshot.data})',
-                        style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 14,
-                            fontWeight: FontWeight.normal,
-                            height: 1),
-                      );
-                    },
+      return Scrollbar(
+        thumbVisibility: true,
+        child: PopupMenuButton<AssetPathEntity>(
+          constraints: const BoxConstraints(minHeight: 10, maxHeight: 250),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          offset: const Offset(0, 30),
+          onSelected: (val) {
+            provider.currentPath = val;
+          },
+          itemBuilder: (BuildContext context) {
+            return provider.pathList
+                .map(
+                  (e) => PopupMenuItem<AssetPathEntity>(
+                    value: e,
+                    padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 10),
+                    child: FutureBuilder(
+                      future: e.assetCountAsync,
+                      builder: (context, snapshot) {
+                        return Text(
+                          '${e.name} (${snapshot.data})',
+                          style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal,
+                              height: 1),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              )
-              .toList();
-        },
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              provider.currentPath!.name,
-              overflow: TextOverflow.ellipsis,
-              style:
-                  const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.normal),
-            ),
-            const SizedBox(width: 3),
-            const Icon(Icons.keyboard_arrow_down, color: Colors.black, size: 18),
-          ],
+                )
+                .toList();
+          },
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                provider.currentPath!.name,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    color: Colors.black, fontSize: 14, fontWeight: FontWeight.normal),
+              ),
+              const SizedBox(width: 3),
+              const Icon(Icons.keyboard_arrow_down, color: Colors.black, size: 18),
+            ],
+          ),
         ),
       );
     }
