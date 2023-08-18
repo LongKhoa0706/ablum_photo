@@ -54,6 +54,8 @@ class ThumbnailImageWidget extends StatelessWidget {
             } else {
               return Container(
                 color: Colors.grey.shade200,
+                width: double.infinity,
+                height: double.infinity,
               );
             }
           },
