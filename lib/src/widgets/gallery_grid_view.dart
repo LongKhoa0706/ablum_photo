@@ -114,7 +114,9 @@ class GalleryGridViewState extends State<GalleryGridView> {
       onTap: () async {
         final asset = cacheMap[index] ??
             (await widget.path.getAssetListRange(start: index, end: index + 1))[0];
-        widget.onAssetItemClick?.call(context, asset, index);
+        if (widget.onEnableItem?.call(asset) != false) {
+          widget.onAssetItemClick?.call(context, asset, index);
+        }
       },
 
       /// render thumbnail
