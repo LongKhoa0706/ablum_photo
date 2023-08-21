@@ -89,6 +89,8 @@ class AlbumImagePickerState extends State<AlbumImagePicker> with AutomaticKeepAl
   /// create object of PickerDataProvider
   late PickerDataProvider provider;
 
+  bool _havePermission = false;
+
   @override
   void initState() {
     _initProvider();
@@ -122,6 +124,16 @@ class AlbumImagePickerState extends State<AlbumImagePicker> with AutomaticKeepAl
   }
 
   void _getPermission() async {
+    if (!await _checkPermission()) {
+      setState(() {
+        _havePermission = false;
+      });
+      await PhotoManager.openSetting();
+      _checkPermission();
+    }
+  }
+
+  Future<bool> _checkPermission() async {
     var result = await PhotoManager.requestPermissionExtend(
         requestOption: const PermissionRequestOption(iosAccessLevel: IosAccessLevel.readWrite));
     if (result.isAuth) {
@@ -129,13 +141,16 @@ class AlbumImagePickerState extends State<AlbumImagePicker> with AutomaticKeepAl
       PhotoManager.addChangeCallback((value) {
         _refreshPathList();
       });
-
       if (provider.pathList.isEmpty) {
         _refreshPathList();
       }
-    } else {
-      PhotoManager.openSetting();
+      setState(() {
+        _havePermission = true;
+      });
+      return true;
     }
+
+    return false;
   }
 
   void _refreshPathList() {
@@ -192,28 +207,47 @@ class AlbumImagePickerState extends State<AlbumImagePicker> with AutomaticKeepAl
 
           /// grid image view
           Expanded(
-            child: ValueListenableBuilder<AssetPathEntity?>(
-              valueListenable: provider.currentPathNotifier,
-              builder: (context, currentPath, child) => currentPath != null
-                  ? GalleryGridView(
-                      path: currentPath,
-                      thumbnailQuality: widget.thumbnailQuality,
-                      provider: provider,
-                      gridViewBackgroundColor: Colors.white,
-                      gridViewController: widget.scrollController,
-                      gridViewPhysics: widget.scrollPhysics,
-                      disableBuilder: widget.disableBuilder,
-                      thumbnailBoxFix: widget.thumbnailBoxFix,
-                      onAssetItemClick: (ctx, asset, index) async {
-                        provider.pickEntity(asset);
-                      },
-                      onEnableItem: widget.onEnableItem,
-                    )
-                  : const SizedBox.shrink(),
-            ),
+            child: _havePermission == false
+                ? _buildNotPermission()
+                : ValueListenableBuilder<AssetPathEntity?>(
+                    valueListenable: provider.currentPathNotifier,
+                    builder: (context, currentPath, child) => currentPath != null
+                        ? GalleryGridView(
+                            path: currentPath,
+                            thumbnailQuality: widget.thumbnailQuality,
+                            provider: provider,
+                            gridViewBackgroundColor: Colors.white,
+                            gridViewController: widget.scrollController,
+                            gridViewPhysics: widget.scrollPhysics,
+                            disableBuilder: widget.disableBuilder,
+                            thumbnailBoxFix: widget.thumbnailBoxFix,
+                            onAssetItemClick: (ctx, asset, index) async {
+                              provider.pickEntity(asset);
+                            },
+                            onEnableItem: widget.onEnableItem,
+                          )
+                        : const SizedBox.shrink(),
+                  ),
           )
         ],
       ),
+    );
+  }
+
+  Widget _buildNotPermission() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.settings,
+          size: 50,
+          color: Colors.grey.shade200,
+        ),
+        TextButton(
+          onPressed: _getPermission,
+          child: const Text('Request permission'),
+        ),
+      ],
     );
   }
 
