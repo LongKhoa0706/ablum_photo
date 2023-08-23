@@ -40,6 +40,8 @@ class GalleryGridView extends StatefulWidget {
   /// check enable item
   final bool Function(AssetEntity)? onEnableItem;
 
+  final Function(AssetEntity)? onTapDisableItem;
+
   const GalleryGridView(
       {Key? key,
       required this.path,
@@ -51,7 +53,8 @@ class GalleryGridView extends StatefulWidget {
       this.thumbnailBoxFix = BoxFit.cover,
       this.thumbnailQuality = 200,
       this.disableBuilder,
-      this.onEnableItem})
+      this.onEnableItem,
+      this.onTapDisableItem})
       : super(key: key);
 
   @override
@@ -116,6 +119,8 @@ class GalleryGridViewState extends State<GalleryGridView> {
             (await widget.path.getAssetListRange(start: index, end: index + 1))[0];
         if (widget.onEnableItem?.call(asset) != false) {
           widget.onAssetItemClick?.call(context, asset, index);
+        } else {
+          widget.onTapDisableItem?.call(asset);
         }
       },
 

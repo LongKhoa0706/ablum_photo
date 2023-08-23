@@ -61,6 +61,9 @@ class AlbumImagePicker extends StatefulWidget {
   /// check enable item
   final bool Function(AssetEntity)? onEnableItem;
 
+  /// onTap disable item
+  final  Function(AssetEntity)? onTapDisableItem;
+
   const AlbumImagePicker(
       {Key? key,
       this.maxSelectionImage = 1,
@@ -78,7 +81,7 @@ class AlbumImagePicker extends StatefulWidget {
       this.scrollController,
       this.onSelectedMaxVideo,
       this.onSelectedMaxImage,
-      this.onEnableItem})
+      this.onEnableItem, this.onTapDisableItem})
       : super(key: key);
 
   @override
@@ -221,6 +224,7 @@ class AlbumImagePickerState extends State<AlbumImagePicker> with AutomaticKeepAl
                             gridViewPhysics: widget.scrollPhysics,
                             disableBuilder: widget.disableBuilder,
                             thumbnailBoxFix: widget.thumbnailBoxFix,
+                            onTapDisableItem: widget.onTapDisableItem,
                             onAssetItemClick: (ctx, asset, index) async {
                               provider.pickEntity(asset);
                             },
