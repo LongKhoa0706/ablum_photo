@@ -62,7 +62,7 @@ class AlbumImagePicker extends StatefulWidget {
   final bool Function(AssetEntity)? onEnableItem;
 
   /// onTap disable item
-  final  Function(AssetEntity)? onTapDisableItem;
+  final Function(AssetEntity)? onTapDisableItem;
 
   const AlbumImagePicker(
       {Key? key,
@@ -81,7 +81,8 @@ class AlbumImagePicker extends StatefulWidget {
       this.scrollController,
       this.onSelectedMaxVideo,
       this.onSelectedMaxImage,
-      this.onEnableItem, this.onTapDisableItem})
+      this.onEnableItem,
+      this.onTapDisableItem})
       : super(key: key);
 
   @override
@@ -171,9 +172,11 @@ class AlbumImagePickerState extends State<AlbumImagePicker> with AutomaticKeepAl
     }
     PhotoManager.getAssetPathList(type: type).then((pathList) {
       /// don't delete setState
-      setState(() {
-        provider.resetPathList(pathList);
-      });
+      if (mounted) {
+        setState(() {
+          provider.resetPathList(pathList);
+        });
+      }
     });
   }
 
