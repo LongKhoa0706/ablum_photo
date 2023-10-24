@@ -26,7 +26,7 @@ class ThumbnailImageWidget extends StatelessWidget {
     Key? key,
     required this.asset,
     required this.provider,
-    this.thumbnailQuality = 200,
+    this.thumbnailQuality = 150,
     this.fit = BoxFit.cover,
     this.disableBuilder,
     this.onEnableItem,
