@@ -1,1 +1,1 @@
-enum AlbumType { all, image, video }
+enum AlbumTypePackage { all, image, video }

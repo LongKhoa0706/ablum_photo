@@ -3,7 +3,7 @@ import 'package:album_image/src/widgets/app_bar_album.dart';
 import 'package:album_image/src/widgets/gallery_grid_view.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'enum/album_type.dart' as albumType;
+import 'enum/album_type.dart';
 
 typedef DisableWidgetBuilder = Widget Function(BuildContext context, AssetEntity item, int index);
 
@@ -22,7 +22,7 @@ class AlbumImagePicker extends StatefulWidget {
   ///  * [all] - Request paths that return images and videos.
   ///  * [image] - Request paths that only return images.
   ///  * [video] - Request paths that only return videos.
-  final albumType.AlbumType type;
+  final AlbumTypePackage type;
 
   /// image quality thumbnail
   final int thumbnailQuality;
@@ -68,7 +68,7 @@ class AlbumImagePicker extends StatefulWidget {
       this.maxSelectionImage = 1,
       this.maxSelectionVideo = 1,
       this.selected,
-      this.type = albumType.AlbumType.all,
+      this.type = AlbumTypePackage.all,
       this.thumbnailBoxFix = BoxFit.cover,
       this.thumbnailQuality = 200,
       this.appBarColor = Colors.white,
@@ -159,13 +159,13 @@ class AlbumImagePickerState extends State<AlbumImagePicker> with AutomaticKeepAl
   void _refreshPathList() {
     late RequestType type;
     switch (widget.type) {
-      case albumType.AlbumType.all:
+      case AlbumTypePackage.all:
         type = RequestType.common;
         break;
-      case albumType.AlbumType.image:
+      case AlbumTypePackage.image:
         type = RequestType.image;
         break;
-      case albumType.AlbumType.video:
+      case AlbumTypePackage.video:
         type = RequestType.video;
         break;
     }
