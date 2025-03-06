@@ -139,7 +139,7 @@ class AlbumImagePickerState extends State<AlbumImagePicker> with AutomaticKeepAl
   Future<bool> _checkPermission() async {
     var result = await PhotoManager.requestPermissionExtend(
         requestOption: const PermissionRequestOption(iosAccessLevel: IosAccessLevel.readWrite));
-    if (result.isAuth) {
+    if (result.hasAccess) {
       PhotoManager.startChangeNotify();
       PhotoManager.addChangeCallback((value) {
         _refreshPathList();
